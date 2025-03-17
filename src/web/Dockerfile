@@ -27,7 +27,7 @@ FROM base as deps
 RUN --mount=type=bind,source=package.json,target=package.json \
     --mount=type=bind,source=package-lock.json,target=package-lock.json \
     --mount=type=cache,target=/root/.npm \
-    npm ci --omit=dev
+    npm ci
 
 ################################################################################
 # Create a stage for building the application.
@@ -45,28 +45,16 @@ COPY . .
 # Run the build script.
 RUN npm run build
 
-################################################################################
-# Create a new stage to run the application with minimal runtime dependencies
-# where the necessary files are copied from the build stage.
-FROM base as final
+# Switch to NGiNX for static web hosting.
+FROM nginx:stable-alpine3.20 as final
 
-# Use production node environment by default.
-ENV NODE_ENV production
+# Copy the built application to the NGiNX image.
+COPY --from=build /usr/src/app/dist /usr/src/app/dist
 
-# Run the application as a non-root user.
-USER node
-
-# Copy package.json so that package manager commands can be used.
-COPY package.json .
-
-# Copy the production dependencies from the deps stage and also
-# the built application from the build stage into the image.
-COPY --from=deps /usr/src/app/node_modules ./node_modules
-COPY --from=build /usr/src/app/dist ./dist
-
+# Copy the NGiNX configuration file.
+COPY default.conf.template /etc/nginx/templates/
 
 # Expose the port that the application listens on.
-EXPOSE 4173
+EXPOSE 80
 
-# Run the application.
-CMD npm run preview
+# No ENTRYPOINT or CMD required - NGiNX will start automatically.
