@@ -2,13 +2,13 @@
 ARG NODE_VERSION=20.18.1
 
 # Use node image for base image for all stages.
-FROM node:${NODE_VERSION}-alpine as base
+FROM node:${NODE_VERSION}-alpine AS base
 
 # Set working directory for all build stages.
 WORKDIR /usr/src/app
 
 # Create a stage for installing production dependecies.
-FROM base as deps
+FROM base AS deps
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.npm to speed up subsequent builds.
@@ -21,7 +21,7 @@ RUN --mount=type=bind,source=package.json,target=package.json \
 
 
 # Create a stage for building the application.
-FROM deps as build
+FROM deps AS build
 
 # Copy the rest of the source files into the image.
 COPY . .
@@ -29,7 +29,7 @@ COPY . .
 RUN npm run build
 
 # Switch to NGiNX for static web hosting.
-FROM nginx:stable-alpine3.20 as final
+FROM nginx:stable-alpine3.20 AS final
 
 # Copy the built application to the NGiNX image.
 COPY --from=build /usr/src/app/dist /usr/src/app/dist
