@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import './App.css'
 
 // Todo: pull in URL from config.js
-const weatherForecastUrl = 'http://localhost:5001/weatherforecast'
+const weatherForecastUrl = 'http://localhost:4173/api/weatherforecast'
 
 
 function App() {
