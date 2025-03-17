@@ -1,3 +1,5 @@
+name: Docker-IRL-Demo
+
 services:
   api:
     build:
@@ -16,6 +18,4 @@ services:
       API_HOST: api
       API_INTERNAL_PORT: 8080
     ports:
-      - 4173:80
-
-
+      - '127.0.0.1:4173:80'
