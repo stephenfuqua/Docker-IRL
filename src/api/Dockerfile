@@ -1,16 +1,3 @@
-# syntax=docker/dockerfile:1
-
-# Comments are provided throughout this file to help you get started.
-# If you need more help, visit the Dockerfile reference guide at
-# https://docs.docker.com/go/dockerfile-reference/
-
-# Want to help us make this template better? Share your feedback here: https://forms.gle/ybq9Krt8jtBL3iCk7
-
-################################################################################
-
-# Learn about building .NET container images:
-# https://github.com/dotnet/dotnet-docker/blob/main/samples/README.md
-
 # Create a stage for building the application.
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 
@@ -29,14 +16,6 @@ ARG TARGETARCH
 RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages \
     dotnet publish -a ${TARGETARCH/amd64/x64} --use-current-runtime --self-contained false -o /app
 
-# If you need to enable globalization and time zones:
-# https://github.com/dotnet/dotnet-docker/blob/main/samples/enable-globalization.md
-################################################################################
-# Create a new stage for running the application that contains the minimal
-# runtime dependencies for the application. This often uses a different base
-# image from the build stage where the necessary files are copied from the build
-# stage.
-#
 # The example below uses an aspnet alpine image as the foundation for running the app.
 # It will also use whatever happens to be the most recent version of that tag when you
 # build your Dockerfile. If reproducibility is important, consider using a more specific

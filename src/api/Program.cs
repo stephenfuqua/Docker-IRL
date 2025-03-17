@@ -1,4 +1,5 @@
 var builder = WebApplication.CreateBuilder(args);
+var config = builder.Configuration;
 const string AllowedHostsPolicy = "AllowReactApp";
 
 builder.Services.AddCors(options =>
@@ -8,14 +9,12 @@ builder.Services.AddCors(options =>
         policy =>
         {
             _ = policy
-                .WithOrigins(builder.Configuration.GetValue<string>("AllowedHosts") ?? "")
+                .WithOrigins(config.GetValue<string>("AllowedHosts") ?? "")
                 .AllowAnyMethod()
                 .AllowAnyHeader();
         }
     );
 });
-
-System.Console.WriteLine(builder.Configuration.GetValue<string>("AllowedHosts") ?? "not found");
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -23,6 +22,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+app.UsePathBase($"{config.GetValue<string>("AppPathBase") ?? "/"}");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -32,7 +32,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors(AllowedHostsPolicy);
-app.UseHttpsRedirection();
+
+if (config.GetValue<bool>("UseHttpsRedirection"))
+{
+    app.UseHttpsRedirection();
+}
 
 var summaries = new[]
 {
@@ -47,7 +51,6 @@ var summaries = new[]
     "Sweltering",
     "Scorching",
 };
-
 
 app.MapGet(
         "/weatherforecast",
