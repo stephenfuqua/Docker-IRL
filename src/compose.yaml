@@ -9,11 +9,11 @@ services:
       - weather-mssql-data:/var/opt/mssql
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=ThisIs4BadPassw0rd
+      - SA_PASSWORD=${MSSQL_SA_PASSWORD}
     ports:
-      - 1433:1433
+      - '127.0.0.1:1435:1433'
     healthcheck:
-      test: /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "ThisIs4BadPassw0rd" -Q "SELECT 1"
+      test: ${MSSQL_HEALTH_CHECK}
       interval: 10s
       timeout: 3s
       retries: 10
@@ -26,7 +26,7 @@ services:
     container_name: api
     environment:
       AppPathBase: /api
-      ConnectionStrings__DefaultConnection: Server=mssql;Database=master;User=sa;Password=ThisIs4BadPassw0rd;Encrypt=false;MultipleActiveResultSets=true
+      ConnectionStrings__DefaultConnection: ${MSSQL_CONNECTION_STRING}
     depends_on:
       - db
 
