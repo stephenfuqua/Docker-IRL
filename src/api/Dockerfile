@@ -19,10 +19,13 @@ COPY . .
 RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages \
     dotnet publish -c Release --use-current-runtime --self-contained false -o /app
 
-# Install curl instead of wget
+# Install additional utilities: globalization (required by Microsoft.Data.SqlClient), and replace `wget` with `curl`
 FROM mcr.microsoft.com/dotnet/aspnet:v8.0-alpine3.20@sha256:4c514ff3c9764b79e0ee1f031e1ac6ec2a0253a66960cddbcd314cb26becf839 AS curl
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false \
+    LC_ALL=en_US.UTF-8 \
+    LANG=en_US.UTF-8
 
-RUN apk update && apk add curl && apk del wget && rm /var/cache/apk/*
+RUN apk del --no-cache wget && apk add --no-cache curl icu-data-full icu-libs
 
 # Final stage
 FROM curl AS final

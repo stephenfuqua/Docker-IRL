@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
 const string AllowedHostsPolicy = "AllowReactApp";
@@ -21,7 +23,14 @@ builder.Services.AddCors(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddHealthChecks();
+builder
+    .Services.AddHealthChecks()
+    .AddCheck(
+        "MSSQL-check",
+        new api.SqlConnectionHealthCheck(config.GetConnectionString("DefaultConnection") ?? ""),
+        HealthStatus.Unhealthy,
+        ["mssql"]
+    );
 
 var app = builder.Build();
 app.UsePathBase($"{config.GetValue<string>("AppPathBase") ?? "/"}");
