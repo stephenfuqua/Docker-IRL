@@ -22,7 +22,7 @@ RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages \
 # Install curl instead of wget
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS curl
 
-RUN apk update && apk add curl && apk del wget
+RUN apk update && apk add curl && apk del wget && rm /var/cache/apk/*
 
 # Final stage
 FROM curl AS final
