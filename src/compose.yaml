@@ -1,6 +1,24 @@
 name: Docker-IRL-Demo
 
 services:
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-CU18-ubuntu-22.04@sha256:ea73825f3d88a23c355ac2f9fdc6bd960fec90171c12c572109b36a558f77bb8
+    container_name: mssql
+    volumes:
+      - weather-mssql-data:/var/opt/mssql
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=ThisIs4BadPassw0rd
+    ports:
+      - 1433:1433
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "ThisIs4BadPassw0rd" -Q "SELECT 1"
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
   api:
     build:
       context: ./api
@@ -8,6 +26,9 @@ services:
     container_name: api
     environment:
       AppPathBase: /api
+      ConnectionStrings__DefaultConnection: Server=mssql;Database=master;User=sa;Password=ThisIs4BadPassw0rd;Encrypt=false;MultipleActiveResultSets=true
+    depends_on:
+      - db
 
   web:
     build:
@@ -19,3 +40,8 @@ services:
       API_INTERNAL_PORT: 8080
     ports:
       - '127.0.0.1:4173:80'
+    depends_on:
+      - api
+
+volumes:
+  weather-mssql-data:
