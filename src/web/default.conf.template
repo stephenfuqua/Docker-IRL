@@ -11,4 +11,11 @@ server {
         proxy_set_header X-Forwarded-Port 443;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
+
+    # Credit: https://stackoverflow.com/questions/60038914/simple-healthcheck-endpoint-in-nginx-server-container
+    location /health {
+            access_log off;
+            add_header 'Content-Type' 'text/plain';
+            return 200 'Healthy';
+    }
 }

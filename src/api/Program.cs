@@ -21,6 +21,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 app.UsePathBase($"{config.GetValue<string>("AppPathBase") ?? "/"}");
 
@@ -69,6 +71,8 @@ app.MapGet(
     )
     .WithName("GetWeatherForecast")
     .WithOpenApi();
+
+app.MapHealthChecks("/health");
 
 app.Run();
 

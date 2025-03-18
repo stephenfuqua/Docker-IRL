@@ -37,6 +37,10 @@ COPY --from=build /usr/src/app/dist /usr/src/app/dist
 # Copy the NGiNX configuration file.
 COPY default.conf.template /etc/nginx/templates/
 
+# Add healthcheck
+HEALTHCHECK --interval=30s --timeout=3s \
+    CMD curl -f http://localhost/health || exit 1
+
 # Expose the port that the application listens on.
 EXPOSE 80
 
