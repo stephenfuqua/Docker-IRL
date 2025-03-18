@@ -1,5 +1,5 @@
 # Create a stage for restoring dependencies
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS deps
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.20@sha256:a39f537eeeff2be72a27ee8d72ebde1cd2d4a76f3a59250272875760991c4aa5 AS deps
 
 # Create a working directory for the source code
 WORKDIR /source
@@ -20,7 +20,7 @@ RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages \
     dotnet publish -c Release --use-current-runtime --self-contained false -o /app
 
 # Install curl instead of wget
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS curl
+FROM mcr.microsoft.com/dotnet/aspnet:v8.0-alpine3.20@sha256:4c514ff3c9764b79e0ee1f031e1ac6ec2a0253a66960cddbcd314cb26becf839 AS curl
 
 RUN apk update && apk add curl && apk del wget && rm /var/cache/apk/*
 

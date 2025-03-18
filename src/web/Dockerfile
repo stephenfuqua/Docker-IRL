@@ -1,8 +1,6 @@
 
-ARG NODE_VERSION=20.18.1
-
 # Use node image for base image for all stages.
-FROM node:${NODE_VERSION}-alpine AS base
+FROM node:20.19.0-alpine3.21@sha256:8bda036ddd59ea51a23bc1a1035d3b5c614e72c01366d989f4120e8adca196d4 AS base
 
 # Set working directory for all build stages.
 WORKDIR /usr/src/app
@@ -29,7 +27,7 @@ COPY . .
 RUN npm run build
 
 # Switch to NGiNX for static web hosting.
-FROM nginx:stable-alpine3.20 AS final
+FROM nginx:stable-alpine3.20@sha256:d2c11a1e63f200585d8225996fd666436277a54e8c0ba728fa9afff28f075bd7 AS final
 
 # Copy the built application to the NGiNX image.
 COPY --from=build /usr/src/app/dist /usr/src/app/dist
