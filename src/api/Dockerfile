@@ -1,30 +1,33 @@
 # Create a stage for building the application.
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 
-COPY . /source
-
+# Create a working directory for the source code
 WORKDIR /source
 
-
-# Build the application.
-# Leverage a cache mount to /root/.nuget/packages so that subsequent builds don't have to re-download packages.
+# Copy only the project files first to leverage Docker layer caching
+COPY *.csproj ./
 RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages \
-    dotnet publish --use-current-runtime --self-contained false -o /app
+    dotnet restore
 
-# The example below uses an aspnet alpine image as the foundation for running the app.
-# It will also use whatever happens to be the most recent version of that tag when you
-# build your Dockerfile. If reproducibility is important, consider using a more specific
-# version (e.g., aspnet:7.0.10-alpine-3.18),
-# or SHA (e.g., mcr.microsoft.com/dotnet/aspnet@sha256:f3d99f54d504a21d38e4cc2f13ff47d67235efeeb85c109d3d1ff1808b38d034).
+# Copy the rest of the source code
+COPY . .
+
+# Build the application
+RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages \
+    dotnet publish -c Release --no-restore --use-current-runtime --self-contained false -o /app
+
+# Final stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS final
 WORKDIR /app
 
-# Copy everything needed to run the app from the "build" stage.
+# Copy only the published files from build stage
 COPY --from=build /app .
 
-# Switch to a non-privileged user (defined in the base image) that the app will run under.
-# See https://docs.docker.com/go/dockerfile-user-best-practices/
-# and https://github.com/dotnet/dotnet-docker/discussions/4764
+# Add healthcheck
+HEALTHCHECK --interval=30s --timeout=3s \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:80/health || exit 1
+
+# Switch to non-privileged user
 USER $APP_UID
 
 ENTRYPOINT ["dotnet", "api.dll"]
